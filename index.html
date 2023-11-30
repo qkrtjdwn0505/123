@@ -42,6 +42,7 @@
     y: canvas.height - 50,
     radius: 20,
     speed: 5,
+    isDragging: false,
   };
 
   const playerImage = new Image();
@@ -62,17 +63,15 @@
     obstacleRadius = obstacleImage.width / 12; // 장애물의 반지름 설정
   }
 
-  let leftKeyPressed = false;
-  let rightKeyPressed = false;
-  let upKeyPressed = false;
-  let downKeyPressed = false;
   let gameActive = false;
   let score = 0;
   let alertShown = false;
 
   document.addEventListener("keydown", handleKeyDown);
   document.addEventListener("keyup", handleKeyUp);
+  canvas.addEventListener("mousedown", handleMouseDown);
   canvas.addEventListener("mousemove", handleMouseMove);
+  canvas.addEventListener("mouseup", handleMouseUp);
 
   document.getElementById("startButton").addEventListener("click", startGame);
   document.getElementById("restartButton").addEventListener("click", restartGame);
@@ -91,33 +90,35 @@
   }
 
   function handleKeyDown(event) {
-    if (event.key === "ArrowLeft") {
-      leftKeyPressed = true;
-    } else if (event.key === "ArrowRight") {
-      rightKeyPressed = true;
-    } else if (event.key === "ArrowUp") {
-      upKeyPressed = true;
-    } else if (event.key === "ArrowDown") {
-      downKeyPressed = true;
-    }
+    // Handle keyboard input if needed
   }
 
   function handleKeyUp(event) {
-    if (event.key === "ArrowLeft") {
-      leftKeyPressed = false;
-    } else if (event.key === "ArrowRight") {
-      rightKeyPressed = false;
-    } else if (event.key === "ArrowUp") {
-      upKeyPressed = false;
-    } else if (event.key === "ArrowDown") {
-      downKeyPressed = false;
+    // Handle keyboard input if needed
+  }
+
+  function handleMouseDown(event) {
+    const mouseX = event.clientX - canvas.getBoundingClientRect().left;
+    const mouseY = event.clientY - canvas.getBoundingClientRect().top;
+
+    const distance = Math.sqrt(
+      Math.pow(mouseX - player.x, 2) + Math.pow(mouseY - player.y, 2)
+    );
+
+    if (distance < player.radius) {
+      player.isDragging = true;
     }
   }
 
   function handleMouseMove(event) {
-    const rect = canvas.getBoundingClientRect();
-    player.x = event.clientX - rect.left;
-    player.y = event.clientY - rect.top;
+    if (player.isDragging) {
+      player.x = event.clientX - canvas.getBoundingClientRect().left;
+      player.y = event.clientY - canvas.getBoundingClientRect().top;
+    }
+  }
+
+  function handleMouseUp() {
+    player.isDragging = false;
   }
 
   function drawPlayer() {
@@ -145,21 +146,7 @@
       return;
     }
 
-    if (leftKeyPressed && player.x - player.radius > 0) {
-      player.x -= player.speed;
-    }
-
-    if (rightKeyPressed && player.x + player.radius < canvas.width) {
-      player.x += player.speed;
-    }
-
-    if (upKeyPressed && player.y - player.radius > 0) {
-      player.y -= player.speed;
-    }
-
-    if (downKeyPressed && player.y + player.radius < canvas.height) {
-      player.y += player.speed;
-    }
+    // Add other game logic as needed
 
     if (Math.random() < 0.02) {
       const obstacle = {
