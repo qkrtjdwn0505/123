@@ -72,6 +72,7 @@
 
   document.addEventListener("keydown", handleKeyDown);
   document.addEventListener("keyup", handleKeyUp);
+  canvas.addEventListener("mousemove", handleMouseMove);
 
   document.getElementById("startButton").addEventListener("click", startGame);
   document.getElementById("restartButton").addEventListener("click", restartGame);
@@ -111,6 +112,12 @@
     } else if (event.key === "ArrowDown") {
       downKeyPressed = false;
     }
+  }
+
+  function handleMouseMove(event) {
+    const rect = canvas.getBoundingClientRect();
+    player.x = event.clientX - rect.left;
+    player.y = event.clientY - rect.top;
   }
 
   function drawPlayer() {
