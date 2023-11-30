@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      background-color: #f0f0f0;
+    }
+
+    canvas {
+      border: 1px solid #ccc;
+    }
+
+    button {
+      font-size: 16px;
+      padding: 10px;
+      margin-top: 20px;
+      cursor: pointer;
+    }
+  </style>
+  <title>Obstacle Avoidance Game</title>
+</head>
+<body>
+
+<canvas id="gameCanvas" width="400" height="600"></canvas>
+<button id="startButton" onclick="startGame()">Start Game</button>
+<button id="restartButton" style="display: none;" onclick="restartGame()">Restart Game</button>
+
+<script>
+  const canvas = document.getElementById("gameCanvas");
+  const ctx = canvas.getContext("2d");
+
+  const player = {
+    x: canvas.width / 2,
+    y: canvas.height - 50,
+    radius: 20,
+    speed: 5,
+  };
+
+  const playerImage = new Image();
+  playerImage.src = 'D:\pngwing.com.png'; // 플레이어 이미지 파일의 경로를 지정하세요.
+
+  playerImage.onload = function() {
+    player.radius = playerImage.width / 30; // 플레이어의 반지름 설정
+  }
+
+  const obstacles = [];
+  const obstacleSpeed = 3;
+  let obstacleRadius;
+
+  const obstacleImage = new Image();
+  obstacleImage.src = 'D:\a.png'; // 장애물 이미지 파일의 경로를 지정하세요.
+
+  obstacleImage.onload = function() {
+    obstacleRadius = obstacleImage.width / 12; // 장애물의 반지름 설정
+  }
+
+  let leftKeyPressed = false;
+  let rightKeyPressed = false;
+  let upKeyPressed = false;
+  let downKeyPressed = false;
+  let gameActive = false;
+  let score = 0;
+  let alertShown = false;
+
+  document.addEventListener("keydown", handleKeyDown);
+  document.addEventListener("keyup", handleKeyUp);
+
+  document.getElementById("startButton").addEventListener("click", startGame);
+  document.getElementById("restartButton").addEventListener("click", restartGame);
+
+  function startGame() {
+    gameActive = true;
+    score = 0;
+    obstacles.length = 0;
+    document.getElementById("startButton").style.display = "none";
+    document.getElementById("restartButton").style.display = "none";
+    alertShown = false;
+  }
+
+  function restartGame() {
+    startGame();
+  }
+
+  function handleKeyDown(event) {
+    if (event.key === "ArrowLeft") {
+      leftKeyPressed = true;
+    } else if (event.key === "ArrowRight") {
+      rightKeyPressed = true;
+    } else if (event.key === "ArrowUp") {
+      upKeyPressed = true;
+    } else if (event.key === "ArrowDown") {
+      downKeyPressed = true;
+    }
+  }
+
+  function handleKeyUp(event) {
+    if (event.key === "ArrowLeft") {
+      leftKeyPressed = false;
+    } else if (event.key === "ArrowRight") {
+      rightKeyPressed = false;
+    } else if (event.key === "ArrowUp") {
+      upKeyPressed = false;
+    } else if (event.key === "ArrowDown") {
+      downKeyPressed = false;
+    }
+  }
+
+  function drawPlayer() {
+    ctx.drawImage(playerImage, player.x - player.radius, player.y - player.radius, player.radius * 2, player.radius * 2);
+  }
+
+  function drawObstacles() {
+    for (const obstacle of obstacles) {
+      ctx.drawImage(obstacleImage, obstacle.x - obstacleRadius, obstacle.y - obstacleRadius, obstacleRadius * 2, obstacleRadius * 2);
+
+      obstacle.y += obstacleSpeed;
+
+      const distance = Math.sqrt(
+        Math.pow(player.x - obstacle.x, 2) + Math.pow(player.y - obstacle.y, 2)
+      );
+
+      if (distance < player.radius + obstacleRadius) {
+        endGame();
+      }
+    }
+  }
+
+  function update() {
+    if (!gameActive) {
+      return;
+    }
+
+    if (leftKeyPressed && player.x - player.radius > 0) {
+      player.x -= player.speed;
+    }
+
+    if (rightKeyPressed && player.x + player.radius < canvas.width) {
+      player.x += player.speed;
+    }
+
+    if (upKeyPressed && player.y - player.radius > 0) {
+      player.y -= player.speed;
+    }
+
+    if (downKeyPressed && player.y + player.radius < canvas.height) {
+      player.y += player.speed;
+    }
+
+    if (Math.random() < 0.02) {
+      const obstacle = {
+        x: Math.random() * canvas.width,
+        y: 0,
+      };
+      obstacles.push(obstacle);
+    }
+
+    obstacles.forEach((obstacle, index) => {
+      if (obstacle.y > canvas.height) {
+        obstacles.splice(index, 1);
+        score++;
+      }
+    });
+  }
+
+  function drawScore() {
+    ctx.font = "20px Arial";
+    ctx.fillStyle = "black";
+    ctx.fillText("Score: " + score, 20, 30);
+  }
+
+  function endGame() {
+    if (!alertShown) {
+      gameActive = false;
+      document.getElementById("startButton").style.display = "block";
+      document.getElementById("restartButton").style.display = "block";
+      alertShown = true;
+      alert("Game Over! Your score is: " + score);
+    }
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    drawPlayer();
+    drawObstacles();
+    drawScore();
+
+    requestAnimationFrame(draw);
+
+    update();
+  }
+
+  draw();
+</script>
+
+</body>
+</html>
